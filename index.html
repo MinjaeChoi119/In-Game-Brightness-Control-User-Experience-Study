@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게임 내 화면 밝기 조절 방식에 따른 사용자 경험 조사</title>
+    <style>
+        body {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            margin: 50px auto;
+            width: 50%;
+        }
+        .image-container, .slider-container, .survey-container {
+            margin: 20px 0;
+        }
+        .slider {
+            width: 65%;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            width: 65%;
+            margin: 0 auto;
+        }
+        .survey-page {
+            display: none;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            font-size: 2em;
+            line-height: 100vh;
+        }
+        .radio-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .radio-group label {
+            margin-right: 10px;
+        }
+        .survey-option {
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            width: 50%;
+            background-color: #f3f3f3;
+            margin: 20px auto;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 25px;
+            width: 0;
+            background-color: #4caf50;
+        }
+        .thank-you-page {
+            display: none;
+        }
+        input[type="checkbox"] {
+            width: 1.5em;
+            height: 1.5em;
+        }
+        button {
+            font-size: 1.25em;
+            padding: 8px 16px;
+        }
+        img {
+            width: 65%;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0;
+            overflow: hidden;
+        }
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .preset-container {
+            display: none;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 20px;
+        }
+        .preset-container button {
+            font-size: 1.25em;
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+    </div>
+    <div class="container">
+        <h1>게임 내 화면 밝기 조절 방식에 따른<br> 사용자 경험 조사</h1>
+        <div id="consent-page">
+            <p>이 사이트는 HCI 설문조사를 위한 사이트입니다.</p>
+            <p>해당 페이지에서 응답하는 데이터가 수집되어 분석에 사용됩니다.</p>
+            <label>
+                <input type="checkbox" id="consent-checkbox"> 설문에 동의합니다
+            </label>
+            <br><br>
+            <button onclick="nextPage()" id="consent-button" disabled>다음</button>
+        </div>
+        
+        <div id="intro-page" class="survey-page">
+            <p>앞으로 4번의 밝기 조절과 간단한 설문을 하게 됩니다. 각각 나타나는 이미지를 토대로 아래 슬라이드 바를 이용해 자신이 적절하다고 생각하는 밝기로 조절하면 됩니다.</p>
+            <p>설문조사 특성상 한번 진행한 설문은 되돌아갈 수 없으니 확실하게 해주세요.</p>
+            <button onclick="nextPage()">다음</button>
+        </div>
+
+        <div id="cycle-info" class="survey-page"></div>
+        
+        <div id="image-page" class="survey-page">
+            <div class="image-container" id="image-container"></div>
+            <p id="image-instruction"></p>
+            <div class="slider-label" id="slider-label">
+                <span>어둡게</span>
+                <span>밝게</span>
+            </div>
+            <div class="slider-container" id="slider-container">
+                <input type="range" min="0" max="100" value="50" class="slider" id="brightness-slider">
+            </div>
+            <div class="preset-container" id="preset-container">
+                <button onclick="setBrightness(0.5)">어둡게</button>
+                <button onclick="setBrightness(1)">보통</button>
+                <button onclick="setBrightness(1.5)">밝게</button>
+            </div>
+            <button style="margin-top: 20px;" onclick="submitBrightness()" id="image-button">확인</button>
+        </div>
+        
+        <div id="survey-page" class="survey-page">
+            <p>이미지에 대한 설문조사</p>
+            <p>해당 밝기 조절 방식에 얼마나 만족하시나요?</p> 
+            <p>(5점일수록 좋은 점수입니다)</p>
+            <div class="radio-container">
+                <div class="radio-group">
+                    <div class="survey-option">
+                        <label>만족도:</label>
+                        <input type="radio" name="satisfaction" value="1"> 1
+                        <input type="radio" name="satisfaction" value="2"> 2
+                        <input type="radio" name="satisfaction" value="3"> 3
+                        <input type="radio" name="satisfaction" value="4"> 4
+                        <input type="radio" name="satisfaction" value="5"> 5
+                    </div>
+                </div>
+            </div>
+            <button onclick="submitSurvey()" id="survey-button">제출</button>
+        </div>
+
+        <div id="final-page" class="survey-page">
+            <p>실제 게임 화면과 유사한 화면입니다. 이상적인 밝기를 설정해 주세요.</p>
+            <div class="canvas-container">
+                <div id="game-canvas"></div>
+                <div class="slider-container" style="display: block;">
+                    <input type="range" min="0" max="100" value="50" class="slider" id="brightness-slider-final" style="display: block; margin: 0 auto;">
+                </div>
+            </div>
+            <button onclick="finalSubmit()" id="final-button">제출</button>
+        </div>
+
+        <div id="thank-you-page" class="thank-you-page">
+            <p>설문에 응해주셔서 감사합니다.</p>
+        </div>
+    </div>
+    <div class="loading-overlay" id="loading-overlay">로딩 중...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.129.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.129.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        let currentPage = 0;
+        let imageOrder = shuffleArray([1, 2, 3, 4]);
+        let surveyData = [];
+        let userId = generateUserId();
+        let light;
+        let startTime, endTime;
+
+        const images = [
+            "https://i.imgur.com/pUL6Ew6.jpeg",
+            "https://i.imgur.com/ffnYIF1.png",
+            "https://i.imgur.com/ffnYIF1.png",
+            "https://i.imgur.com/yA9CVzd.jpeg",
+            "https://png.pngtree.com/png-clipart/20230416/ourlarge/pngtree-realistic-3d-question-mark-png-image_6708514.png" // Dummy data
+        ];
+
+        document.getElementById("consent-checkbox").addEventListener("change", function() {
+            document.getElementById("consent-button").disabled = !this.checked;
+        });
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                checkSurveyCompletion();
+            });
+        });
+
+        function checkSurveyCompletion() {
+            let satisfaction = document.querySelector('input[name="satisfaction"]:checked');
+            
+            if (satisfaction) {
+                document.getElementById("survey-button").disabled = false;
+            } else {
+                document.getElementById("survey-button").disabled = true;
+            }
+        }
+
+        function nextPage(action) {
+            disableButtons();
+            showLoadingOverlay();
+
+            setTimeout(() => {
+                currentPage++;
+                document.querySelectorAll(".survey-page").forEach(page => page.style.display = "none");
+                document.getElementById("consent-page").style.display = "none";
+
+                if (currentPage === 1) {
+                    document.getElementById("intro-page").style.display = "block";
+                } else if (currentPage <= 9) {
+                    if (currentPage % 2 === 0) {
+                        document.getElementById("image-page").style.display = "block";
+                        showImage();
+                        updateCycleInfo();
+                        document.getElementById("survey-button").disabled = true;
+                        startTime = new Date(); // Start timing here
+                    } else {
+                        document.getElementById("survey-page").style.display = "block";
+                        resetSurveyOptions();
+                    }
+                } else if (currentPage === 10) {
+                    document.getElementById("final-page").style.display = "block";
+                    initGame();
+                } else {
+                    document.getElementById("thank-you-page").style.display = "block";
+                }
+
+                updateProgressBar();
+                hideLoadingOverlay();
+                enableButtons();
+            }, 1000);
+        }
+
+        function resetSurveyOptions() {
+            document.querySelectorAll('input[name="satisfaction"]').forEach(radio => radio.checked = false);
+        }
+
+        function updateCycleInfo() {
+            let cycleNumber = Math.floor((currentPage - 1) / 2) + 1;
+            if (cycleNumber > 0 && cycleNumber <= 4) {
+                let cycleInfoText = `현재 진행 단계: ${cycleNumber} / 4`;
+                document.getElementById("cycle-info").textContent = cycleInfoText;
+            } else {
+                document.getElementById("cycle-info").textContent = "";
+            }
+        }
+
+        function updateProgressBar() {
+            let progressBarFill = document.getElementById("progress-bar-fill");
+            let progressPercentage = (currentPage / 11) * 100;
+            progressBarFill.style.width = `${progressPercentage}%`;
+        }
+
+        function showImage() {
+            let container = document.getElementById("image-container");
+            container.innerHTML = '';
+            let imgIndex = imageOrder[Math.floor((currentPage - 2) / 2)];
+            let img = document.createElement("img");
+            img.src = images[imgIndex - 1];
+            img.alt = "Example Image " + imgIndex;
+            img.id = "example-image";
+            container.appendChild(img);
+
+            let sliderContainer = document.getElementById("slider-container");
+            let sliderLabel = document.getElementById("slider-label");
+            let presetContainer = document.getElementById("preset-container");
+            let slider = document.getElementById("brightness-slider");
+            let instruction = document.getElementById("image-instruction");
+
+            if (imgIndex === 1) {
+                instruction.textContent = "그림의 문양이 거의 보이지 않게 조절하세요.";
+                sliderContainer.style.display = "block";
+                sliderLabel.style.display = "flex";
+                presetContainer.style.display = "none";
+                slider.value = "50";
+                slider.addEventListener("input", adjustBrightness);
+            } else if (imgIndex === 3) {
+                instruction.textContent = "프리셋을 선택하여 밝기를 조절하세요.";
+                sliderContainer.style.display = "none";
+                sliderLabel.style.display = "none";
+                presetContainer.style.display = "flex";
+                setBrightness(1);
+            } else {
+                instruction.textContent = "가장 적절하다고 생각되는 밝기를 골라주세요.";
+                sliderContainer.style.display = "block";
+                sliderLabel.style.display = "flex";
+                presetContainer.style.display = "none";
+                slider.value = "50";
+                slider.addEventListener("input", adjustBrightness);
+            }
+        }
+
+        function adjustBrightness() {
+            let img = document.getElementById("example-image");
+            let brightness = document.getElementById("brightness-slider").value;
+            img.style.filter = `brightness(${brightness / 50})`;
+        }
+
+        function setBrightness(factor) {
+            let img = document.getElementById("example-image");
+            img.style.filter = `brightness(${factor})`;
+            img.setAttribute("data-brightness", factor);
+        }
+
+        function submitBrightness() {
+            disableButtons();
+            showLoadingOverlay();
+
+            let imgIndex = imageOrder[Math.floor((currentPage - 2) / 2)];
+            let brightness;
+            if (imgIndex === 3) {
+                brightness = document.getElementById("example-image").getAttribute("data-brightness");
+            } else {
+                brightness = document.getElementById("brightness-slider").value;
+            }
+
+            endTime = new Date(); // End timing here
+
+            let duration = (endTime - startTime) / 1000; // Duration in seconds
+
+            let data = {
+                id: userId,
+                image: imgIndex,
+                brightness: brightness,
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                duration: duration
+            };
+
+            surveyData.push(data);
+
+            google.script.run.withSuccessHandler(function() {
+                nextPage('showSurvey');
+            }).saveSurveyData(data);
+        }
+
+        function submitSurvey() {
+            let satisfaction = document.querySelector('input[name="satisfaction"]:checked');
+            
+            if (!satisfaction) {
+                alert("설문에 미응답하셨습니다.");
+                return;
+            }
+
+            disableButtons();
+            showLoadingOverlay();
+
+            let satisfactionValue = satisfaction.value;
+
+            let data = surveyData[surveyData.length - 1];
+            data.satisfaction = satisfactionValue;
+
+            google.script.run.withSuccessHandler(function() {
+                hideLoadingOverlay();
+                enableButtons();
+                nextPage('submitSurvey');
+            }).saveSurveyData(data);
+        }
+
+        function finalSubmit() {
+            disableButtons();
+            showLoadingOverlay();
+
+            let finalBrightness = document.getElementById("brightness-slider-final").value;
+            let finalData = {
+                id: userId,
+                finalBrightness: finalBrightness
+            };
+            surveyData.push(finalData);
+
+            google.script.run.withSuccessHandler(function() {
+                hideLoadingOverlay();
+                enableButtons();
+                nextPage();
+            }).saveSurveyData(finalData);
+        }
+
+        function disableButtons() {
+            document.querySelectorAll("button").forEach(button => button.disabled = true);
+        }
+
+        function enableButtons() {
+            document.querySelectorAll("button").forEach(button => button.disabled = false);
+        }
+
+        function showLoadingOverlay() {
+            document.getElementById("loading-overlay").style.display = "block";
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById("loading-overlay").style.display = "none";
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generateUserId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function initGame() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.6);
+            document.getElementById('game-canvas').appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            light = new THREE.PointLight(0xffffff, 1, 100);
+            light.position.set(0, 10, 0);
+            scene.add(light);
+
+            const floorGeometry = new THREE.PlaneGeometry(20, 20);
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = - Math.PI / 2;
+            scene.add(floor);
+
+            const createTree = (x, y, z) => {
+                const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1);
+                const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.set(x, y, z);
+
+                const leavesGeometry = new THREE.SphereGeometry(0.5);
+                const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+                const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+                leaves.position.set(x, y + 0.75, z);
+
+                scene.add(trunk);
+                scene.add(leaves);
+            };
+
+            for (let i = -5; i <= 5; i++) {
+                for (let j = -5; j <= 5; j++) {
+                    if (Math.random() > 0.7) createTree(i * 2, 0.5, j * 2);
+                }
+            }
+
+            camera.position.set(0, 1.6, 8);
+
+            const animate = function () {
+                requestAnimationFrame(animate);
+
+                renderer.render(scene, camera);
+            };
+
+            animate();
+
+            document.getElementById("brightness-slider-final").addEventListener("input", (event) => {
+                const brightness = event.target.value;
+                light.intensity = brightness / 50;
+            });
+        }
+    </script>
+</body>
+</html>
