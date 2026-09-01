@@ -1,21 +1,21 @@
 # In-Game Brightness Control: A User Experience Study
 
-Games ask you to set screen brightness before you have ever seen the game. They do it in several different ways, and the ways are not equally good. This study compares four of them, with 28 participants.
+Games ask you to set screen brightness before you have ever seen the game, and they do it in several different ways. This study compares four of them on three measures: how satisfied players were, how close they landed to the brightness they actually wanted, and how long it took them.
 
 ## The four controls
 
-| # | Method | What the player sees |
-| --- | --- | --- |
-| 1 | **Logo** | A logo image; drag until it is barely visible |
-| 2 | **Sample image** | A reference game still; drag until it looks right |
-| 3 | **Preset** | Pick from discrete preset levels, no slider |
-| 4 | **Settings panel** | A plain brightness slider in a settings screen |
+| Method | What the player sees |
+| --- | --- |
+| **Logo** | A logo image; drag until it looks right |
+| **Sample image** | A reference game still; drag until it looks right |
+| **Preset** | Pick from discrete preset levels — no slider |
+| **Settings panel** | A plain brightness slider in a settings screen |
 
-A fifth task came last: adjust brightness while watching the **live game screen**. That reading is treated as the participant's ideal brightness, so every method can be scored against it.
+Every slider is calibrated so that the 50% position is the intended brightness. Presets are the one method without a slider.
 
-Every slider is calibrated so that the 50% position is the intended brightness.
+A fifth task comes last: adjust brightness while watching the actual game screen. That reading is treated as the brightness the player really wanted, and every method is scored against it.
 
-## Design decisions
+## Design
 
 - **Order is randomized per participant.** An earlier adjustment biases later ones, so the four methods appear in random order. The live-screen calibration is always last, so it cannot anchor the others.
 - **No going back.** Progress cannot be reversed — otherwise a later method would contaminate an earlier answer. A progress bar is shown instead, so participants can see how much is left.
@@ -24,20 +24,46 @@ Every slider is calibrated so that the 50% position is the intended brightness.
 
 Each submitted row is: session key, method index, the brightness the participant set, and the survey answers.
 
+## Participants
+
+35 people started the study and 33 finished it. Because the method a participant sees *first* is the strongest source of order bias, the sample was balanced on it: of those who finished, 8 started on Logo, 7 on Sample image, 9 on Preset and 9 on Settings panel, and **7 were drawn at random from each group** — 28 participants, evenly split across first-method conditions.
+
 ## Results
 
-Mean satisfaction (1–5), n = 28:
+**Satisfaction** — survey rating, higher is better.
 
-| Method | Mean satisfaction |
+| Method | Score |
 | --- | --- |
 | Sample image | **4.39** |
 | Settings panel | 4.21 |
 | Logo | 3.93 |
-| Preset | **2.86** |
+| Preset | 2.86 |
 
-Showing people a representative image and letting them tune against it beat every alternative. Presets were clearly the worst — about a point and a half below the best method — which is worth noting, because presets are the cheapest option to build and are common in practice.
+**Effectiveness** — distance between the brightness set with each method and the brightness set while watching the live game screen, on a 1–100 brightness scale. Lower is better.
 
-Beyond satisfaction, each method was also scored objectively as the gap between the brightness the participant chose and the brightness they chose while watching the live game screen, so perceived quality and actual accuracy could be compared per method.
+| Method | Deviation |
+| --- | --- |
+| Sample image | **9.07** |
+| Preset | 13.64 |
+| Logo | 24.82 |
+| Settings panel | 28.29 |
+
+**Convenience** — time taken to settle on a value. Participants differ in overall pace, so times are mean-normalized per participant. Lower is faster.
+
+| Method | Normalized time |
+| --- | --- |
+| Preset | **−0.3001** |
+| Sample image | −0.0232 |
+| Logo | 0.1141 |
+| Settings panel | 0.2092 |
+
+## What the three measures show
+
+Only **Sample image** ranks well on all three: highest satisfaction, smallest deviation from the wanted brightness, second fastest.
+
+The other three disagree with themselves. **Settings panel** is second in satisfaction but last in both accuracy and speed — players liked it while landing furthest from the brightness they actually wanted. **Preset** is the reverse: last in satisfaction by a wide margin, yet the fastest method and second most accurate.
+
+So a method that feels good is not necessarily a method that works, and asking users which control they prefer would have picked a different winner than measuring what they did with it.
 
 ## Files
 
@@ -49,12 +75,6 @@ Beyond satisfaction, each method was also scored objectively as the gap between 
 ## Why Apps Script
 
 The study needed controlled image stimuli in a randomized, non-reversible order — which a standard Google Form cannot do — while still writing straight into a spreadsheet for analysis. A static page posting to an Apps Script web app gave both, with no server to run.
-
-## Limitations
-
-Order was randomized per participant rather than counterbalanced across participants. With four methods there are 24 possible orders, so 28 participants do not cover the order space evenly; a counterbalanced design would separate method effects from order effects more cleanly.
-
-The survey also leaned on subjective items. Objective measures — time taken to settle on a value, number of readjustments — would carry more weight than self-reported satisfaction alone.
 
 ## Context
 
