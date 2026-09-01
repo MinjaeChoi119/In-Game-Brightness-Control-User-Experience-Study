@@ -72,10 +72,6 @@ So a method that feels good is not necessarily a method that works, and asking u
 | `index.html` | The instrument — presents each method in randomized order, blocks backtracking, collects ratings |
 | `Code.gs` | Google Apps Script web app that receives each submission and appends it to a Google Sheet |
 
-## Why Apps Script
-
-The study needed controlled image stimuli in a randomized, non-reversible order — which a standard Google Form cannot do — while still writing straight into a spreadsheet for analysis. A static page posting to an Apps Script web app gave both, with no server to run.
-
 ## Context
 
 Human-Computer Interaction coursework, Hanyang University, 2024. Participant responses are not included in this repository.
